@@ -405,9 +405,7 @@ class updates(modules.Module):
     @log.log_function()
     def get_json(self, url=None):
         if url is None:
-            url = self.UPDATE_DOWNLOAD_URL % ('releases', 'releases.json')
-        if url.split('/')[-1] != 'releases.json':
-            url = url + '/releases.json'
+            url = self.UPDATE_DOWNLOAD_URL % ('update.coreelec.org', '', 'releases.php')
         data = oe.load_url(url)
         if not data is None:
             update_json = json.loads(data)
@@ -462,17 +460,15 @@ class updates(modules.Module):
         if hasattr(self, 'update_in_progress'):
             oe.dbg_log('updates::check_updates_v2', 'Update in progress (exit)', oe.LOGDEBUG)
             return
-        if self.struct['update']['settings']['SubmitStats']['value'] == '1':
-            systemid = oe.SYSTEMID
-        else:
-            systemid = "NOSTATS"
         if oe.BUILDER_VERSION:
             version = oe.BUILDER_VERSION
         else:
             version = oe.VERSION
-        url = f'{self.UPDATE_REQUEST_URL}?i={oe.url_quote(systemid)}&d={oe.url_quote(oe.DISTRIBUTION)}&pa={oe.url_quote(oe.ARCHITECTURE)}&v={oe.url_quote(version)}&f={oe.url_quote(self.hardware_flags)}'
+        url = f'{self.UPDATE_REQUEST_URL}?i={oe.url_quote(oe.SYSTEMID)}&d={oe.url_quote(oe.DISTRIBUTION)}&pa={oe.url_quote(oe.ARCHITECTURE)}&v={oe.url_quote(version)}&f={oe.url_quote(self.hardware_flags)}'
         if oe.BUILDER_NAME:
            url += f'&b={oe.url_quote(oe.BUILDER_NAME)}'
+        if self.struct['update']['settings']['SubmitStats']['value'] == '0':
+           url += f'&nostats'
 
         oe.dbg_log('updates::check_updates_v2', f'URL: {url}', oe.LOGDEBUG)
         update_json = oe.load_url(url)
@@ -481,7 +477,7 @@ class updates(modules.Module):
             update_json = json.loads(update_json)
             self.last_update_check = time.time()
             if 'update' in update_json['data'] and 'folder' in update_json['data']:
-                self.update_file = self.UPDATE_DOWNLOAD_URL % (update_json['data']['folder'], update_json['data']['update'])
+                self.update_file = self.UPDATE_DOWNLOAD_URL % (update_json['data']['host'], update_json['data']['folder'], update_json['data']['update'])
                 if self.struct['update']['settings']['UpdateNotify']['value'] == '1':
                     oe.notify(oe._(32363), oe._(32364))
                 if self.struct['update']['settings']['AutoUpdate']['value'] == 'auto' and force == False:
