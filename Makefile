@@ -3,10 +3,10 @@
 # Copyright (C) 2013 Lutz Fiebach (lufie@openelec.tv)
 # Copyright (C) 2020-present Team LibreELEC (https://libreelec.tv)
 
-ADDON_NAME := service.libreelec.settings
+ADDON_NAME := service.coreelec.settings
 ADDON_VERSION := 0.0.0
-DISTRONAME := LibreELEC
-ROOT_PASSWORD := libreelec
+DISTRONAME := CoreELEC
+ROOT_PASSWORD := coreelec
 
 SHELL := /bin/bash
 BUILDDIR := build
@@ -32,7 +32,6 @@ uninstall:
 $(BUILDDIR)/$(ADDON_NAME):
 	mkdir -p $(BUILDDIR)/$(ADDON_NAME)
 	cp -R resources $(BUILDDIR)/$(ADDON_NAME)
-	cp COPYING $(BUILDDIR)/$(ADDON_NAME)
 	cp addon.xml $(BUILDDIR)/$(ADDON_NAME)
 	cp *.py $(BUILDDIR)/$(ADDON_NAME)
 	sed -e "s,@ADDONNAME@,$(ADDON_NAME),g" \

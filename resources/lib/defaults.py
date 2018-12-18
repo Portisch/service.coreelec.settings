@@ -2,6 +2,7 @@
 # Copyright (C) 2009-2013 Stephan Raue (stephan@openelec.tv)
 # Copyright (C) 2013 Lutz Fiebach (lufie@openelec.tv)
 # Copyright (C) 2020-present Team LibreELEC (https://libreelec.tv)
+# Copyright (C) 2020-present Team CoreELEC (https://coreelec.org)
 
 import os
 
@@ -19,7 +20,7 @@ USER_CONFIG = os.environ.get('USER_CONFIG', '/storage/.config')
 
 connman = {
     'CONNMAN_DAEMON': '/usr/sbin/connmand',
-    'WAIT_CONF_FILE': f'{CONFIG_CACHE}/libreelec/network_wait',
+    'WAIT_CONF_FILE': f'{CONFIG_CACHE}/coreelec/network_wait',
     'ENABLED': lambda : (True if os.path.exists(connman['CONNMAN_DAEMON']) and not os.path.exists('/dev/.kernel_ipconfig') else False),
     }
 connman['ENABLED'] = connman['ENABLED']()
@@ -47,8 +48,8 @@ services = {
     'SAMBA_SMDB': '/usr/sbin/smbd',
     'D_SAMBA_WORKGROUP': 'WORKGROUP',
     'D_SAMBA_SECURE': '0',
-    'D_SAMBA_USERNAME': 'libreelec',
-    'D_SAMBA_PASSWORD': 'libreelec',
+    'D_SAMBA_USERNAME': 'coreelec',
+    'D_SAMBA_PASSWORD': 'coreelec',
     'D_SAMBA_MINPROTOCOL': 'SMB2',
     'D_SAMBA_MAXPROTOCOL': 'SMB3',
     'D_SAMBA_AUTOSHARE': '1',
@@ -64,7 +65,7 @@ system = {
     'KERNEL_CMD': '/proc/cmdline',
     'SET_CLOCK_CMD': '/sbin/hwclock --systohc --utc',
     'XBMC_RESET_FILE': f'{CONFIG_CACHE}/reset_xbmc',
-    'LIBREELEC_RESET_FILE': f'{CONFIG_CACHE}/reset_oe',
+    'COREELEC_RESET_FILE': f'{CONFIG_CACHE}/reset_oe',
     'KEYBOARD_INFO': '/usr/share/X11/xkb/rules/base.xml',
     'UDEV_KEYBOARD_INFO': f'{CONFIG_CACHE}/xkb/layout',
     'NOX_KEYBOARD_INFO': '/usr/lib/keymaps',
@@ -80,8 +81,8 @@ system = {
 
 updates = {
     'ENABLED': not os.path.exists('/dev/.update_disabled'),
-    'UPDATE_REQUEST_URL': 'https://update.libreelec.tv/updates.php',
-    'UPDATE_DOWNLOAD_URL': 'http://%s.libreelec.tv/%s',
+    'UPDATE_REQUEST_URL': 'https://update.coreelec.org/updates.php',
+    'UPDATE_DOWNLOAD_URL': 'https://%s.coreelec.org/%s',
     'LOCAL_UPDATE_DIR': '/storage/.update/',
 
     'RPI_FLASHING_TRIGGER': '/storage/.rpi_flash_firmware',

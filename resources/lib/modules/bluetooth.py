@@ -2,6 +2,7 @@
 # Copyright (C) 2009-2013 Stephan Raue (stephan@openelec.tv)
 # Copyright (C) 2013 Lutz Fiebach (lufie@openelec.tv)
 # Copyright (C) 2019-present Team LibreELEC (https://libreelec.tv)
+# Copyright (C) 2020-present Team CoreELEC (https://coreelec.org)
 
 import dbus
 import dbus.service
@@ -407,7 +408,7 @@ class bluetooth(modules.Module):
 
     @log.log_function()
     def open_pinkey_window(self, runtime=60, title=32343):
-        self.pinkey_window = oeWindows.pinkeyWindow('service-LibreELEC-Settings-getPasskey.xml', oe.__cwd__, 'Default')
+        self.pinkey_window = oeWindows.pinkeyWindow('service-CoreELEC-Settings-getPasskey.xml', oe.__cwd__, 'Default')
         self.pinkey_window.show()
         self.pinkey_window.set_title(oe._(title))
         self.pinkey_timer = pinkeyTimer(self, runtime)
@@ -443,8 +444,8 @@ class bluetooth(modules.Module):
             self.signal_receivers = []
             self.NameOwnerWatch = None
             self.ObexNameOwnerWatch = None
-            self.btAgentPath = '/LibreELEC/bt_agent'
-            self.obAgentPath = '/LibreELEC/ob_agent'
+            self.btAgentPath = '/CoreELEC/bt_agent'
+            self.obAgentPath = '/CoreELEC/ob_agent'
             self.parent = parent
 
         @log.log_function()

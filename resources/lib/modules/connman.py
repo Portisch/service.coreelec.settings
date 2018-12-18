@@ -2,6 +2,7 @@
 # Copyright (C) 2009-2013 Stephan Raue (stephan@openelec.tv)
 # Copyright (C) 2013 Lutz Fiebach (lufie@openelec.tv)
 # Copyright (C) 2017-present Team LibreELEC
+# Copyright (C) 2018-present Team CoreELEC (https://coreelec.org)
 
 import log
 import modules
@@ -264,7 +265,7 @@ class connmanService(object):
 
     @log.log_function()
     def __init__(self, servicePath, oeMain):
-        self.winOeCon = oeWindows.mainWindow('service-LibreELEC-Settings-mainWindow.xml', oe.__cwd__, 'Default', oeMain=oe, isChild=True)
+        self.winOeCon = oeWindows.mainWindow('service-CoreELEC-Settings-mainWindow.xml', oe.__cwd__, 'Default', oeMain=oe, isChild=True)
         self.servicePath = servicePath
         oe.dictModules['connmanNetworkConfig'] = self
         self.service_properties = dbus_connman.service_get_properties(servicePath)
@@ -423,7 +424,7 @@ class connman(modules.Module):
                 'TetheringIdentifier': {
                     'order': 3,
                     'name': 32198,
-                    'value': 'LibreELEC-AP',
+                    'value': 'CoreELEC-AP',
                     'action': 'set_technologie',
                     'type': 'text',
                     'parent': {

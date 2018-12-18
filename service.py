@@ -2,6 +2,7 @@
 # Copyright (C) 2009-2013 Stephan Raue (stephan@openelec.tv)
 # Copyright (C) 2013 Lutz Fiebach (lufie@openelec.tv)
 # Copyright (C) 2019-present Team LibreELEC (https://libreelec.tv)
+# Copyright (C) 2020-present Team CoreELEC (https://coreelec.org)
 
 import syspath
 import dbus_utils
@@ -15,7 +16,7 @@ import xbmc
 
 class Service_Thread(threading.Thread):
 
-    SOCKET = '/var/run/service.libreelec.settings.sock'
+    SOCKET = '/var/run/service.coreelec.settings.sock'
 
     def __init__(self):
         threading.Thread.__init__(self)
@@ -34,7 +35,7 @@ class Service_Thread(threading.Thread):
 
     @log.log_function()
     def run(self):
-        if oe.read_setting('libreelec', 'wizard_completed') == None:
+        if oe.read_setting('coreelec', 'wizard_completed') == None:
             threading.Thread(target=oe.openWizard).start()
         while self.stopped == False:
             log.log(f'Waiting', log.INFO)

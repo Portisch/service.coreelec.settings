@@ -2,6 +2,7 @@
 # Copyright (C) 2009-2013 Stephan Raue (stephan@openelec.tv)
 # Copyright (C) 2013 Lutz Fiebach (lufie@openelec.tv)
 # Copyright (C) 2019-present Team LibreELEC (https://libreelec.tv)
+# Copyright (C) 2020-present Team CoreELEC (https://coreelec.org)
 
 import hostname
 import log
@@ -23,7 +24,7 @@ class system(modules.Module):
     ENABLED = False
     KERNEL_CMD = None
     XBMC_RESET_FILE = None
-    LIBREELEC_RESET_FILE = None
+    COREELEC_RESET_FILE = None
     KEYBOARD_INFO = None
     UDEV_KEYBOARD_INFO = None
     NOX_KEYBOARD_INFO = None
@@ -398,7 +399,7 @@ class system(modules.Module):
     @log.log_function()
     def reset_oe(self, listItem=None):
         if self.ask_sure_reset('Hard') == 1:
-            open(self.LIBREELEC_RESET_FILE, 'a').close()
+            open(self.COREELEC_RESET_FILE, 'a').close()
             oe.winOeMain.close()
             oe.xbmcm.waitForAbort(1)
             xbmc.executebuiltin('Reboot')
@@ -442,7 +443,7 @@ class system(modules.Module):
                 except:
                     pass
                 self.backup_dlg = xbmcgui.DialogProgress()
-                self.backup_dlg.create('LibreELEC', oe._(32375))
+                self.backup_dlg.create('CoreELEC', oe._(32375))
                 if not os.path.exists(self.BACKUP_DESTINATION):
                     os.makedirs(self.BACKUP_DESTINATION)
                 self.backup_file = oe.timestamp() + '.tar'

@@ -2,6 +2,7 @@
 # Copyright (C) 2009-2013 Stephan Raue (stephan@openelec.tv)
 # Copyright (C) 2013 Lutz Fiebach (lufie@openelec.tv)
 # Copyright (C) 2019-present Team LibreELEC (https://libreelec.tv)
+# Copyright (C) 2020-present Team CoreELEC (https://coreelec.org)
 
 import log
 import modules
@@ -541,7 +542,7 @@ class services(modules.Module):
         SSHchange = False
         newpwd = xbmcDialog.input(oe._(746))
         if newpwd:
-            if newpwd == "libreelec":
+            if newpwd == "coreelec":
                 oe.execute('cp -fp /usr/cache/shadow /storage/.cache/shadow')
                 readout3 = "Retype password"
             else:

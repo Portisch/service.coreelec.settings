@@ -2,6 +2,7 @@
 # Copyright (C) 2009-2013 Stephan Raue (stephan@openelec.tv)
 # Copyright (C) 2013 Lutz Fiebach (lufie@openelec.tv)
 # Copyright (C) 2019-present Team LibreELEC (https://libreelec.tv)
+# Copyright (C) 2020-present Team CoreELEC (https://coreelec.org)
 
 import oe
 import xbmc
@@ -15,7 +16,7 @@ from threading import Thread
 
 xbmcDialog = xbmcgui.Dialog()
 
-__scriptid__ = 'service.libreelec.settings'
+__scriptid__ = 'service.coreelec.settings'
 __addon__ = xbmcaddon.Addon(id=__scriptid__)
 __cwd__ = __addon__.getAddonInfo('path')
 
@@ -286,19 +287,19 @@ class mainWindow(xbmcgui.WindowXMLDialog):
                         selectedItem.setProperty('value', xbmcKeyboard.getText())
                 elif strTyp == 'file':
                     xbmcDialog = xbmcgui.Dialog()
-                    returnValue = xbmcDialog.browse(1, 'LibreELEC.tv', 'files', '', False, False, '/')
+                    returnValue = xbmcDialog.browse(1, 'CoreELEC', 'files', '', False, False, '/')
                     if returnValue != '' and returnValue != '/':
                         selectedItem.setProperty('value', str(returnValue))
                 elif strTyp == 'folder':
                     xbmcDialog = xbmcgui.Dialog()
-                    returnValue = xbmcDialog.browse(0, 'LibreELEC.tv', 'files', '', False, False, '/storage')
+                    returnValue = xbmcDialog.browse(0, 'CoreELEC', 'files', '', False, False, '/storage')
                     if returnValue != '' and returnValue != '/':
                         selectedItem.setProperty('value', str(returnValue))
                 elif strTyp == 'ip':
                     if strValue == '':
                         strValue = '0.0.0.0'
                     xbmcDialog = xbmcgui.Dialog()
-                    returnValue = xbmcDialog.numeric(3, 'LibreELEC.tv', strValue)
+                    returnValue = xbmcDialog.numeric(3, 'CoreELEC', strValue)
                     if returnValue != '':
                         if returnValue == '0.0.0.0':
                             selectedItem.setProperty('value', '')
@@ -308,7 +309,7 @@ class mainWindow(xbmcgui.WindowXMLDialog):
                     if strValue == 'None' or strValue == '':
                         strValue = '0'
                     xbmcDialog = xbmcgui.Dialog()
-                    returnValue = xbmcDialog.numeric(0, 'LibreELEC.tv', strValue)
+                    returnValue = xbmcDialog.numeric(0, 'CoreELEC.org', strValue)
                     if returnValue != '':
                         selectedItem.setProperty('value', returnValue)
                 elif strTyp == 'bool':
@@ -693,7 +694,7 @@ class wizard(xbmcgui.WindowXMLDialog):
                     xbmc.executebuiltin(langAddon)
                     oe.xbmcm.waitForAbort(0.5)
                     xbmc.executebuiltin('SendClick(10100,11)')
-                    oe.write_setting('libreelec', 'wizard_completed', 'True')
+                    oe.write_setting('coreelec', 'wizard_completed', 'True')
                     self.visible = False
                     self.close()
                     xbmc.executebuiltin(lang_str)
