@@ -502,6 +502,9 @@ class updates(modules.Module):
                     oe.notify(oe._(32363), oe._(32366))
                 shutil.move(oe.TEMP + 'update_file', self.LOCAL_UPDATE_DIR + self.update_file)
                 subprocess.call('sync', shell=True, stdin=None, stdout=None, stderr=None)
+                ceReboot = xbmcgui.Dialog().yesno('CoreELEC', 'An update has been downloaded, would you like to reboot now to apply it?')
+                if(ceReboot):
+                    xbmc.restart()
                 if silent == False:
                     oe.winOeMain.close()
                     oe.xbmcm.waitForAbort(1)
