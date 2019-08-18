@@ -201,6 +201,14 @@ class system(modules.Module):
                         'InfoText': 719,
                         'order': 2,
                         },
+                    'paste_debug': {
+                        'name': 32391,
+                        'value': '0',
+                        'action': 'do_send_debug',
+                        'type': 'button',
+                        'InfoText': 721,
+                        'order': 3,
+                        },
                     },
                 },
             }
@@ -505,6 +513,10 @@ class system(modules.Module):
     @log.log_function()
     def do_send_crash_logs(self, listItem=None):
         self.do_send_logs('/usr/bin/pastecrash')
+
+    @log.log_function()
+    def do_send_debug(self, listItem=None):
+        self.do_send_logs('/usr/bin/ce-debug -l | /usr/bin/pastebinit')
 
     @log.log_function()
     def do_send_logs(self, log_cmd):
