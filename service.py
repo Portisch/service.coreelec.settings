@@ -37,6 +37,8 @@ class Service_Thread(threading.Thread):
     def run(self):
         if oe.read_setting('coreelec', 'wizard_completed') == None:
             threading.Thread(target=oe.openWizard).start()
+        elif oe.BOOT_HINT == 'UPDATE' and oe.HAS_RNOTES:
+            threading.Thread(target=oe.openReleaseNotes).start()
         while self.stopped == False:
             log.log(f'Waiting', log.INFO)
             conn, addr = self.sock.accept()
