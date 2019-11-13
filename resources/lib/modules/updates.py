@@ -245,6 +245,8 @@ class updates(modules.Module):
     def get_hardware_flags(self):
         if oe.PROJECT == "Generic":
             return self.get_hardware_flags_x86_64()
+        elif oe.PROJECT == "Amlogic-ce":
+            return oe.execute('/usr/bin/dtname', get_result=1).rstrip('\x00\n')
         elif oe.ARCHITECTURE.split('.')[1] in ['aarch64', 'arm' ]:
             return self.get_hardware_flags_dtflag()
         else:
