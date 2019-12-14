@@ -64,7 +64,6 @@ class hardware:
     @log.log_function()
     def start_service(self):
         self.load_values()
-        self.set_fan_level()
         self.initialize_fan()
 
     @log.log_function()
@@ -93,34 +92,36 @@ class hardware:
     def initialize_fan(self, listItem=None):
         if not listItem == None:
             self.set_value(listItem)
-        if self.struct['fan']['settings']['fan_mode']['value'] == 'off':
-            fan_enable = open('/sys/class/fan/enable', 'w')
-            fan_enable.write('0')
-            fan_enable.close()
-        if self.struct['fan']['settings']['fan_mode']['value'] == 'manual':
-            fan_enable = open('/sys/class/fan/enable', 'w')
-            fan_enable.write('1')
-            fan_enable.close()
-            fan_mode_ctl = open('/sys/class/fan/mode', 'w')
-            fan_mode_ctl.write('0')
-            fan_mode_ctl.close()
-            self.set_fan_level()
-        if self.struct['fan']['settings']['fan_mode']['value'] == 'auto':
-            fan_enable = open('/sys/class/fan/enable', 'w')
-            fan_enable.write('1')
-            fan_enable.close()
-            fan_mode_ctl = open('/sys/class/fan/mode', 'w')
-            fan_mode_ctl.write('1')
-            fan_mode_ctl.close()
+        if os.access('/sys/class/fan/enable', os.W_OK) and os.access('/sys/class/fan/mode', os.W_OK):
+            if self.struct['fan']['settings']['fan_mode']['value'] == 'off':
+                fan_enable = open('/sys/class/fan/enable', 'w')
+                fan_enable.write('0')
+                fan_enable.close()
+            if self.struct['fan']['settings']['fan_mode']['value'] == 'manual':
+                fan_enable = open('/sys/class/fan/enable', 'w')
+                fan_enable.write('1')
+                fan_enable.close()
+                fan_mode_ctl = open('/sys/class/fan/mode', 'w')
+                fan_mode_ctl.write('0')
+                fan_mode_ctl.close()
+                self.set_fan_level()
+            if self.struct['fan']['settings']['fan_mode']['value'] == 'auto':
+                fan_enable = open('/sys/class/fan/enable', 'w')
+                fan_enable.write('1')
+                fan_enable.close()
+                fan_mode_ctl = open('/sys/class/fan/mode', 'w')
+                fan_mode_ctl.write('1')
+                fan_mode_ctl.close()
 
     @log.log_function()
     def set_fan_level(self, listItem=None):
         if not listItem == None:
             self.set_value(listItem)
-        if not self.struct['fan']['settings']['fan_level']['value'] is None and not self.struct['fan']['settings']['fan_level']['value'] == '':
-            fan_level_ctl = open('/sys/class/fan/level', 'w')
-            fan_level_ctl.write(self.struct['fan']['settings']['fan_level']['value'])
-            fan_level_ctl.close()
+        if os.access('/sys/class/fan/level', os.W_OK):
+            if not self.struct['fan']['settings']['fan_level']['value'] is None and not self.struct['fan']['settings']['fan_level']['value'] == '':
+                fan_level_ctl = open('/sys/class/fan/level', 'w')
+                fan_level_ctl.write(self.struct['fan']['settings']['fan_level']['value'])
+                fan_level_ctl.close()
 
     @log.log_function()
     def load_menu(self, focusItem):
