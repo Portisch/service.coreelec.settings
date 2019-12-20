@@ -300,6 +300,22 @@ msgctxt "#782"
 msgid "Set fan speed level"
 msgstr ""
 
+msgctxt "#785"
+msgid "Modify Vendor Bootloader to support all wake-up features such as CEC, Wake-On-LAN, IR, and GPIO wake-up from suspend or power off state!"
+msgstr ""
+
+msgctxt "#786"
+msgid "Set the IR remote control power button code"
+msgstr ""
+
+msgctxt "#787"
+msgid "Enable/Disable Wake-on-LAN"
+msgstr ""
+
+msgctxt "#788"
+msgid "Enable/Disable USB Power when device is off/suspend"
+msgstr ""
+
 msgctxt "#32001"
 msgid "Services"
 msgstr ""
@@ -1082,4 +1098,68 @@ msgstr ""
 
 msgctxt "#32502"
 msgid "Speed Level"
+msgstr ""
+
+msgctxt "#32503"
+msgid "Power"
+msgstr ""
+
+msgctxt "#32504"
+msgid "Inject BL301 Blob"
+msgstr ""
+
+msgctxt "#32505"
+msgid "IR Remote Power Code"
+msgstr ""
+
+msgctxt "#32506"
+msgid "Wake-on-LAN"
+msgstr ""
+
+msgctxt "#32507"
+msgid "USB Power"
+msgstr ""
+
+msgctxt "#33510"
+msgid "Warning!"
+msgstr ""
+
+msgctxt "#33511"
+msgid "Continue"
+msgstr ""
+
+msgctxt "#33512"
+msgid "Finished!"
+msgstr ""
+
+msgctxt "#33513"
+msgid "Notice!"
+msgstr ""
+
+msgctxt "#33514"
+msgid "Error!"
+msgstr ""
+
+msgctxt "#33515"
+msgid "Inject Bootloader BL301 Blob..."
+msgstr ""
+
+msgctxt "#33516"
+msgid "[B][COLOR red]Note: This will modify the firmware on your device.[/COLOR][/B][CR]The BL301 bootloader blob has been customized by the CoreELEC Team to support all features used to wake a device from a suspend or power off state!"
+msgstr ""
+
+msgctxt "#33517"
+msgid "Finished update of the BL301 on internal eMMC.[CR]A reboot is now required!"
+msgstr ""
+
+msgctxt "#33518"
+msgid "Error [%d] has occurred while using the 'inject_bl301' tool![CR]See '/storage/inject_bl301.log' for details."
+msgstr ""
+
+msgctxt "#33519"
+msgid "System is not supported by BL301 injection![CR]See '/storage/inject_bl301.log' for details."
+msgstr ""
+
+msgctxt "#33520"
+msgid "Update of BL301 on eMMC is not needed."
 msgstr ""
