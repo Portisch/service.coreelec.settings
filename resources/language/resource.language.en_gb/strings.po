@@ -316,6 +316,10 @@ msgctxt "#788"
 msgid "Enable/Disable USB Power when device is off/suspend"
 msgstr ""
 
+msgctxt "#790"
+msgid "Enable/Disable VESA display modes"
+msgstr ""
+
 msgctxt "#32001"
 msgid "Services"
 msgstr ""
@@ -1118,6 +1122,14 @@ msgstr ""
 
 msgctxt "#32507"
 msgid "USB Power"
+msgstr ""
+
+msgctxt "#32508"
+msgid "Display"
+msgstr ""
+
+msgctxt "#32509"
+msgid "VESA modes"
 msgstr ""
 
 msgctxt "#33510"

@@ -136,6 +136,21 @@ class hardware:
                         },
                     },
                 },
+            'display': {
+                'order': 3,
+                'name': 32508,
+                'not_supported': [],
+                'settings': {
+                    'vesa_enable': {
+                        'order': 1,
+                        'name': 32509,
+                        'InfoText': 790,
+                        'value': '0',
+                        'action': 'set_vesa_enable',
+                        'type': 'bool',
+                        },
+                    },
+                },
             }
 
     @log.log_function()
@@ -196,6 +211,11 @@ class hardware:
             self.struct['power']['settings']['usbpower']['value'] = '0'
         if "1" in usbpower:
             self.struct['power']['settings']['usbpower']['value'] = '1'
+
+        if os.path.exists('/flash/vesa.enable'):
+            self.struct['display']['settings']['vesa_enable']['value'] = '1'
+        else:
+            self.struct['display']['settings']['vesa_enable']['value'] = '0'
 
 
     @log.log_function()
@@ -291,6 +311,21 @@ class hardware:
                 oe.set_config_ini("usbpower", "1")
             else:
                 oe.set_config_ini("usbpower", "0")
+
+    @log.log_function()
+    def set_vesa_enable(self, listItem=None):
+        if not listItem == None:
+            self.set_value(listItem)
+
+            if self.struct['display']['settings']['vesa_enable']['value'] == '1':
+              ret = subprocess.call("mount -o remount,rw /flash", shell=True)
+              ret = subprocess.call("touch /flash/vesa.enable", shell=True)
+              ret = subprocess.call("mount -o remount,ro /flash", shell=True)
+            else:
+              if os.path.exists("/flash/vesa.enable"):
+                ret = subprocess.call("mount -o remount,rw /flash", shell=True)
+                os.remove("/flash/vesa.enable")
+                ret = subprocess.call("mount -o remount,ro /flash", shell=True)
 
     @log.log_function()
     def load_menu(self, focusItem):
