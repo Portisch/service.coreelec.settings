@@ -320,6 +320,10 @@ msgctxt "#790"
 msgid "Enable/Disable VESA display modes"
 msgstr ""
 
+msgctxt "#791"
+msgid "Set CPU governor for all cores"
+msgstr ""
+
 msgctxt "#32001"
 msgid "Services"
 msgstr ""
@@ -1130,6 +1134,14 @@ msgstr ""
 
 msgctxt "#32509"
 msgid "VESA modes"
+msgstr ""
+
+msgctxt "#32510"
+msgid "Performance"
+msgstr ""
+
+msgctxt "#32511"
+msgid "CPU governor"
 msgstr ""
 
 msgctxt "#33510"

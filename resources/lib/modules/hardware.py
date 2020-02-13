@@ -157,12 +157,29 @@ class hardware:
                         },
                     },
                 },
+            'performance': {
+                'order': 4,
+                'name': 32510,
+                'not_supported': [],
+                'settings': {
+                    'cpu_governor': {
+                        'order': 1,
+                        'name': 32511,
+                        'InfoText': 791,
+                        'value': '',
+                        'action': 'set_cpu_governor',
+                        'type': 'multivalue',
+                        'values': ['ondemand', 'performance'],
+                        },
+                    },
+                },
             }
 
     @log.log_function()
     def start_service(self):
         self.load_values()
         self.initialize_fan()
+        self.set_cpu_governor()
 
     @log.log_function()
     def stop_service(self):
@@ -223,6 +240,21 @@ class hardware:
         else:
             self.struct['display']['settings']['vesa_enable']['value'] = '0'
 
+        cpu_clusters = ["", "cpu0/"]
+        for cluster in cpu_clusters:
+            sys_device = '/sys/devices/system/cpu/' + cluster + 'cpufreq/'
+            if not os.path.exists(sys_device):
+                continue
+
+            if os.path.exists(sys_device + 'scaling_available_governors'):
+                available_gov = oe.load_file(sys_device + 'scaling_available_governors')
+                self.struct['performance']['settings']['cpu_governor']['values'] = available_gov.split()
+
+            value = oe.read_setting('hardware', 'cpu_governor')
+            if value is None:
+                value = oe.load_file(sys_device + 'scaling_governor')
+
+            self.struct['performance']['settings']['cpu_governor']['value'] = value
 
     @log.log_function()
     def initialize_fan(self, listItem=None):
@@ -332,6 +364,21 @@ class hardware:
                 ret = subprocess.call("mount -o remount,rw /flash", shell=True)
                 os.remove("/flash/vesa.enable")
                 ret = subprocess.call("mount -o remount,ro /flash", shell=True)
+
+    @log.log_function()
+    def set_cpu_governor(self, listItem=None):
+        if not listItem == None:
+            self.set_value(listItem)
+
+        value = self.struct['performance']['settings']['cpu_governor']['value']
+        if not value is None and not value == '':
+            cpu_clusters = ["", "cpu0/", "cpu4/"]
+            for cluster in cpu_clusters:
+                sys_device = '/sys/devices/system/cpu/' + cluster + 'cpufreq/scaling_governor'
+                if os.access(sys_device, os.W_OK):
+                    cpu_governor_ctl = open(sys_device, 'w')
+                    cpu_governor_ctl.write(value)
+                    cpu_governor_ctl.close()
 
     @log.log_function()
     def load_menu(self, focusItem):
