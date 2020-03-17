@@ -13,16 +13,25 @@ import threading
 import subprocess
 import shutil
 
+# CEC Wake Up flags from u-boot(bl301)
+CEC_FUNC_MASK = 0
+AUTO_POWER_ON_MASK = 3
+STREAMPATH_POWER_ON_MASK = 4
+ACTIVE_SOURCE_MASK = 6
 
 class hardware:
-
     ENABLED = False
+    need_inject = False
     menu = {'8': {
         'name': 32004,
         'menuLoader': 'load_menu',
         'listTyp': 'list',
         'InfoText': 780,
         }}
+
+    power_compatible_devices = [
+        'odroid_n2',
+    ]
 
     remotes = [
         {
@@ -103,9 +112,10 @@ class hardware:
                     },
                 },
             'power': {
-                'order': 1,
+                'order': 2,
                 'name': 32503,
                 'not_supported': [],
+                'compatible_model': self.power_compatible_devices,
                 'settings': {
                     'inject_bl301': {
                         'order': 1,
@@ -113,7 +123,7 @@ class hardware:
                         'InfoText': 785,
                         'value': '0',
                         'action': 'set_bl301',
-                        'type': 'button',
+                        'type': 'bool',
                         },
                     'remote_power': {
                         'order': 2,
@@ -142,8 +152,59 @@ class hardware:
                         },
                     },
                 },
-            'display': {
+            'cec': {
                 'order': 3,
+                'name': 32512,
+                'not_supported': [],
+                'settings': {
+                    'cec_name': {
+                        'order': 1,
+                        'name': 32513,
+                        'InfoText': 792,
+                        'value': 'CoreELEC',
+                        'action': 'set_cec',
+                        'type': 'text',
+                        },
+                    'cec_all': {
+                        'order': 2,
+                        'name': 32514,
+                        'InfoText': 793,
+                        'value': '0',
+                        'bit': CEC_FUNC_MASK,
+                        'action': 'set_cec',
+                        'type': 'bool',
+                        },
+                    'cec_auto_power': {
+                        'order': 3,
+                        'name': 32515,
+                        'InfoText': 794,
+                        'value': '0',
+                        'bit': AUTO_POWER_ON_MASK,
+                        'action': 'set_cec',
+                        'type': 'bool',
+                        },
+                    'cec_streaming': {
+                        'order': 4,
+                        'name': 32516,
+                        'InfoText': 795,
+                        'value': '0',
+                        'bit': STREAMPATH_POWER_ON_MASK,
+                        'action': 'set_cec',
+                        'type': 'bool',
+                        },
+                    'cec_active_route': {
+                        'order': 5,
+                        'name': 32517,
+                        'InfoText': 796,
+                        'value': '0',
+                        'bit': ACTIVE_SOURCE_MASK,
+                        'action': 'set_cec',
+                        'type': 'bool',
+                        },
+                    },
+                },
+            'display': {
+                'order': 4,
                 'name': 32508,
                 'not_supported': [],
                 'settings': {
@@ -158,7 +219,7 @@ class hardware:
                     },
                 },
             'performance': {
-                'order': 4,
+                'order': 5,
                 'name': 32510,
                 'not_supported': [],
                 'settings': {
@@ -191,7 +252,61 @@ class hardware:
 
     @log.log_function()
     def exit(self):
+        if self.struct['power']['settings']['inject_bl301']['value'] == '1':
+            xbmcDialog = xbmcgui.Dialog()
+
+            if hardware.need_inject:
+                IBL_Code = self.run_inject_bl301('-Y')
+
+                if IBL_Code == 0:
+                    self.load_values()
+                    response = xbmcDialog.ok(oe._(33512), oe._(33517))
+                elif IBL_Code == 1:
+                    xbmcDialog = xbmcgui.Dialog()
+                    response = xbmcDialog.ok(oe._(33513), oe._(33520))
+                elif IBL_Code == (-2 & 0xff):
+                    xbmcDialog = xbmcgui.Dialog()
+                    response = xbmcDialog.ok(oe._(33514), oe._(33519))
+                else:
+                    xbmcDialog = xbmcgui.Dialog()
+                    response = xbmcDialog.ok(oe._(33514), oe._(33518) % IBL_Code)
+
+                if IBL_Code != 0:
+                    oe.dbg_log('hardware::set_bl301', 'ERROR: (%d)' % IBL_Code, 4)
+
+                hardware.need_inject = False
         pass
+
+    @log.log_function()
+    def check_compatibility(self):
+        ret = False
+        dtname = oe.execute('/usr/bin/dtname', get_result=1).rstrip('\x00\n')
+        ret = any(substring in dtname for substring in self.struct['power']['compatible_model'])
+        oe.dbg_log('hardware::check_compatibility', 'exit_function, ret: %s' % ret, 0)
+        return ret
+
+    @log.log_function()
+    def run_inject_bl301(self, parameter=''):
+        IBL = subprocess.Popen(["/usr/sbin/inject_bl301", parameter], close_fds=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        IBL.wait()
+        f = open("/storage/inject_bl301.log",'w')
+        f.writelines(IBL.stdout.readlines())
+        f.close()
+        return IBL.returncode
+
+    @log.log_function()
+    def check_bl301(self):
+        IBL = subprocess.Popen(["/usr/lib/coreelec/check-bl301"], close_fds=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        IBL.wait()
+        return str(IBL.returncode)
+
+    @log.log_function()
+    def inject_check_compatibility(self):
+        ret = False
+        if os.path.exists('/usr/sbin/inject_bl301'):
+            if self.run_inject_bl301('-c') == 0:
+                ret = True
+        return ret
 
     @log.log_function()
     def load_values(self):
@@ -202,26 +317,63 @@ class hardware:
         if not value is None:
             self.struct['fan']['settings']['fan_level']['value'] = value
 
-        if not os.path.exists('/usr/sbin/inject_bl301'):
+        if not self.inject_check_compatibility():
             self.struct['power']['settings']['inject_bl301']['hidden'] = 'true'
             self.struct['power']['settings']['inject_bl301']['value'] = '0'
+        else:
+            if 'hidden' in self.struct['power']['settings']['inject_bl301']:
+                del self.struct['power']['settings']['inject_bl301']['hidden']
+            self.struct['power']['settings']['inject_bl301']['value'] = self.check_bl301()
 
-        remotewakeup = oe.get_config_ini('remotewakeup')
+        power_setting_visible = bool(int(self.struct['power']['settings']['inject_bl301']['value'])) or self.check_compatibility()
 
-        remote_names = []
-        remote_is_known = 0
-        for remote in self.remotes:
-            remote_names.append(remote["name"])
-            if remote["remotewakeup"] in remotewakeup:
-                self.struct['power']['settings']['remote_power']['value'] = remote["name"]
-                remote_is_known = 1
+        if not power_setting_visible:
+            self.struct['cec']['hidden'] = 'true'
+        else:
+            if 'hidden' in self.struct['cec']:
+                del self.struct['cec']['hidden']
 
-        if remotewakeup == '':
-            self.struct['power']['settings']['remote_power']['value'] = ''
-        if remotewakeup != '' and remote_is_known == 0:
-            self.struct['power']['settings']['remote_power']['value'] = 'Custom'
+            if not self.struct['power']['settings']['inject_bl301']['value'] == '1':
+                self.struct['cec']['settings']['cec_name']['hidden'] = 'true'
+            else:
+                if 'hidden' in self.struct['cec']['settings']['cec_name']:
+                    del self.struct['cec']['settings']['cec_name']['hidden']
+                self.struct['cec']['settings']['cec_name']['value'] = oe.get_config_ini('cec_osd_name', 'CoreELEC')
 
-        self.struct['power']['settings']['remote_power']['values'] = remote_names
+            cec_func_config = int(oe.get_config_ini('cec_func_config', '7f'), 16)
+            bit = self.struct['cec']['settings']['cec_all']['bit']
+            self.struct['cec']['settings']['cec_all']['value'] = str((cec_func_config & (1 << bit)) >> bit)
+
+            if self.struct['cec']['settings']['cec_all']['value'] == '1':
+                bit = self.struct['cec']['settings']['cec_auto_power']['bit']
+                self.struct['cec']['settings']['cec_auto_power']['value'] = str((cec_func_config & (1 << bit)) >> bit)
+                bit = self.struct['cec']['settings']['cec_streaming']['bit']
+                self.struct['cec']['settings']['cec_streaming']['value'] = str((cec_func_config & (1 << bit)) >> bit)
+                bit = self.struct['cec']['settings']['cec_active_route']['bit']
+                self.struct['cec']['settings']['cec_active_route']['value'] = str((cec_func_config & (1 << bit)) >> bit)
+
+        if not power_setting_visible:
+            self.struct['power']['settings']['remote_power']['hidden'] = 'true'
+        else:
+            if 'hidden' in self.struct['power']['settings']['remote_power']:
+                del self.struct['power']['settings']['remote_power']['hidden']
+
+            remotewakeup = oe.get_config_ini('remotewakeup')
+
+            remote_names = []
+            remote_is_known = 0
+            for remote in self.remotes:
+                remote_names.append(remote["name"])
+                if remote["remotewakeup"] in remotewakeup:
+                    self.struct['power']['settings']['remote_power']['value'] = remote["name"]
+                    remote_is_known = 1
+
+            if remotewakeup == '':
+                self.struct['power']['settings']['remote_power']['value'] = ''
+            if remotewakeup != '' and remote_is_known == 0:
+                self.struct['power']['settings']['remote_power']['value'] = 'Custom'
+
+            self.struct['power']['settings']['remote_power']['values'] = remote_names
 
         wol = oe.get_config_ini('wol', '0')
         if wol == '' or "0" in wol:
@@ -229,11 +381,17 @@ class hardware:
         if "1" in wol:
             self.struct['power']['settings']['wol']['value'] = '1'
 
-        usbpower = oe.get_config_ini('usbpower', '0')
-        if usbpower == '' or "0" in usbpower:
-            self.struct['power']['settings']['usbpower']['value'] = '0'
-        if "1" in usbpower:
-            self.struct['power']['settings']['usbpower']['value'] = '1'
+        if not power_setting_visible:
+            self.struct['power']['settings']['usbpower']['hidden'] = 'true'
+        else:
+            if 'hidden' in self.struct['power']['settings']['usbpower']:
+                del self.struct['power']['settings']['usbpower']['hidden']
+
+            usbpower = oe.get_config_ini('usbpower', '0')
+            if usbpower == '' or "0" in usbpower:
+                self.struct['power']['settings']['usbpower']['value'] = '0'
+            if "1" in usbpower:
+                self.struct['power']['settings']['usbpower']['value'] = '1'
 
         if os.path.exists('/flash/vesa.enable'):
             self.struct['display']['settings']['vesa_enable']['value'] = '1'
@@ -302,33 +460,79 @@ class hardware:
                 oe.set_config_ini("decode_type", "\'" + remote["decode_type"] + "\'")
                 oe.set_config_ini("remotewakeupmask" , "\'" + remote["remotewakeupmask"] + "\'")
 
+        hardware.need_inject = True
+
     @log.log_function()
     def set_bl301(self, listItem=None):
         xbmcDialog = xbmcgui.Dialog()
-        ynresponse = xbmcDialog.yesno(oe._(33515), oe._(33516), yeslabel=oe._(33511), nolabel=oe._(32212))
 
-        if ynresponse == 1:
-            IBL = subprocess.Popen(["/usr/sbin/inject_bl301", "-Y"], close_fds=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-            IBL.wait()
-            IBL_Code = IBL.returncode
-            f = open("/storage/inject_bl301.log",'w')
-            f.writelines(IBL.stdout.readlines())
-            f.close()
+        if listItem.getProperty('value') == '1':
+            ynresponse = xbmcDialog.yesno(oe._(33515), oe._(33516), yeslabel=oe._(33511), nolabel=oe._(32212))
 
-            if IBL_Code == 0:
-                response = xbmcDialog.ok(oe._(33512), oe._(33517))
-            elif IBL_Code == 1:
-                xbmcDialog = xbmcgui.Dialog()
-                response = xbmcDialog.ok(oe._(33513), oe._(33520))
-            elif IBL_Code == (-2 & 0xff):
-                xbmcDialog = xbmcgui.Dialog()
-                response = xbmcDialog.ok(oe._(33514), oe._(33519))
+            if ynresponse == 1:
+                IBL_Code = self.run_inject_bl301('-Y')
+
+                if IBL_Code == 0:
+                    self.struct['power']['settings']['inject_bl301']['value'] = '1'
+                    self.load_values()
+                    response = xbmcDialog.ok(oe._(33512), oe._(33517))
+                elif IBL_Code == 1:
+                    xbmcDialog = xbmcgui.Dialog()
+                    response = xbmcDialog.ok(oe._(33513), oe._(33520))
+                elif IBL_Code == (-2 & 0xff):
+                    xbmcDialog = xbmcgui.Dialog()
+                    response = xbmcDialog.ok(oe._(33514), oe._(33519))
+                else:
+                    xbmcDialog = xbmcgui.Dialog()
+                    response = xbmcDialog.ok(oe._(33514), oe._(33518) % IBL_Code)
+
+                if IBL_Code != 0:
+                    oe.dbg_log('hardware::set_bl301', 'ERROR: (%d)' % IBL_Code, 4)
+        else:
+            ynresponse = xbmcDialog.yesno(oe._(33515), oe._(33521), yeslabel=oe._(33511), nolabel=oe._(32212))
+
+            if ynresponse == 1:
+                IBL = subprocess.Popen(["cat", "/proc/cpuinfo"], close_fds=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                IBL.wait()
+                serial = next((s for s in IBL.stdout if "Serial" in s), None)
+                if serial != '':
+                    filename = '/flash/{0}_bl301.bin'.format([x.strip() for x in serial.split(':')][1])
+                    if os.path.exists(filename) and os.path.exists('/dev/bootloader'):
+                        oe.dbg_log('hardware::set_bl301', 'write %s to /dev/bootloader' % filename, 0)
+                        with open(filename, 'rb') as fr:
+                            with open('/dev/bootloader', 'wb') as fw:
+                                fw.write(fr.read())
+                        self.struct['power']['settings']['inject_bl301']['value'] = '0'
+                        response = xbmcDialog.ok(oe._(33512), oe._(33522))
+
+    @log.log_function()
+    def set_cec(self, listItem=None):
+        if not listItem == None:
+            if not listItem.getProperty('entry') == 'cec_name':
+                bit = self.struct['cec']['settings'][listItem.getProperty('entry')]['bit']
+                cec_func_config = int(oe.get_config_ini('cec_func_config', '7f'), 16)
+
+                if bit == CEC_FUNC_MASK:
+                    for item in self.struct['cec']['settings']:
+                        if listItem.getProperty('value') == '0':
+                            self.struct['cec']['settings'][item]['value'] = '0'
+                        else:
+                            self.struct['cec']['settings'][item]['value'] = '1'
+                else:
+                    self.struct[listItem.getProperty('category')]['settings'][listItem.getProperty('entry')]['value'] = listItem.getProperty('value')
+                    if listItem.getProperty('value') == '0':
+                        cec_func_config &= ~(1 << bit)
+                    else:
+                        cec_func_config |= 1 << bit
+
+                oe.set_config_ini("cec_func_config", hex(cec_func_config)[2:])
             else:
-                xbmcDialog = xbmcgui.Dialog()
-                response = xbmcDialog.ok(oe._(33514), oe._(33518) % IBL_Code)
+                old_name = self.struct['cec']['settings'][listItem.getProperty('entry')]['value']
+                if not old_name == listItem.getProperty('value')[:14]:
+                    self.struct['cec']['settings'][listItem.getProperty('entry')]['value'] = listItem.getProperty('value')[:14]
+                    oe.set_config_ini("cec_osd_name", self.struct['cec']['settings'][listItem.getProperty('entry')]['value'])
 
-            if IBL_Code != 0:
-                oe.dbg_log('hardware::set_bl301', 'ERROR: (%d)' % IBL_Code, 4)
+                    hardware.need_inject = True
 
     @log.log_function()
     def set_wol(self, listItem=None):
@@ -340,6 +544,8 @@ class hardware:
             else:
                 oe.set_config_ini("wol", "0")
 
+            hardware.need_inject = not hardware.need_inject
+
     @log.log_function()
     def set_usbpower(self, listItem=None):
         if not listItem == None:
@@ -349,6 +555,8 @@ class hardware:
                 oe.set_config_ini("usbpower", "1")
             else:
                 oe.set_config_ini("usbpower", "0")
+
+            hardware.need_inject = not hardware.need_inject
 
     @log.log_function()
     def set_vesa_enable(self, listItem=None):
