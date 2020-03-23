@@ -125,8 +125,16 @@ class hardware:
                         'action': 'set_bl301',
                         'type': 'bool',
                         },
-                    'remote_power': {
+                    'heartbeat': {
                         'order': 2,
+                        'name': 32518,
+                        'InfoText': 789,
+                        'value': '0',
+                        'action': 'set_heartbeat',
+                        'type': 'bool',
+                        },
+                    'remote_power': {
+                        'order': 3,
                         'name': 32505,
                         'InfoText': 786,
                         'value': '',
@@ -135,7 +143,7 @@ class hardware:
                         'values': ['Unknown'],
                         },
                     'wol': {
-                        'order': 3,
+                        'order': 4,
                         'name': 32506,
                         'InfoText': 787,
                         'value': '0',
@@ -143,7 +151,7 @@ class hardware:
                         'type': 'bool',
                         },
                     'usbpower': {
-                        'order': 4,
+                        'order': 5,
                         'name': 32507,
                         'InfoText': 788,
                         'value': '0',
@@ -320,6 +328,17 @@ class hardware:
             value = oe.read_setting('hardware', 'fan_level')
             if not value is None:
                 self.struct['fan']['settings']['fan_level']['value'] = value
+
+        if not os.path.exists('/sys/firmware/devicetree/base/leds/blueled'):
+            self.struct['power']['settings']['heartbeat']['hidden'] = 'true'
+        else:
+            if 'hidden' in self.struct['power']['settings']['heartbeat']:
+                del self.struct['power']['settings']['heartbeat']['hidden']
+            heartbeat = self.oe.get_config_ini('heartbeat', '1')
+            if heartbeat == '' or "1" in heartbeat:
+                self.struct['power']['settings']['heartbeat']['value'] = '1'
+            if "0" in heartbeat:
+                self.struct['power']['settings']['heartbeat']['value'] = '0'
 
         if not self.inject_check_compatibility():
             self.struct['power']['settings']['inject_bl301']['hidden'] = 'true'
@@ -537,6 +556,16 @@ class hardware:
                     oe.set_config_ini("cec_osd_name", self.struct['cec']['settings'][listItem.getProperty('entry')]['value'])
 
                     hardware.need_inject = True
+
+    @log.log_function()
+    def set_heartbeat(self, listItem=None):
+        if not listItem == None:
+            self.set_value(listItem)
+
+            if self.struct['power']['settings']['heartbeat']['value'] == '1':
+                self.oe.set_config_ini("heartbeat", "1")
+            else:
+                self.oe.set_config_ini("heartbeat", "0")
 
     @log.log_function()
     def set_wol(self, listItem=None):
