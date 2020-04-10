@@ -307,12 +307,6 @@ class hardware:
         return IBL.returncode
 
     @log.log_function()
-    def check_bl301(self):
-        IBL = subprocess.Popen(["/usr/lib/coreelec/check-bl301"], close_fds=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        IBL.wait()
-        return str(IBL.returncode)
-
-    @log.log_function()
     def inject_check_compatibility(self):
         ret = False
         if os.path.exists('/usr/sbin/inject_bl301'):
@@ -349,7 +343,10 @@ class hardware:
         else:
             if 'hidden' in self.struct['power']['settings']['inject_bl301']:
                 del self.struct['power']['settings']['inject_bl301']['hidden']
-            self.struct['power']['settings']['inject_bl301']['value'] = self.check_bl301()
+            if os.path.exists('/tmp/bl301_injected'):
+                self.struct['power']['settings']['inject_bl301']['value'] = '1'
+            else:
+                self.struct['power']['settings']['inject_bl301']['value'] = '0'
 
         power_setting_visible = bool(int(self.struct['power']['settings']['inject_bl301']['value'])) or self.check_compatibility()
 
@@ -500,6 +497,7 @@ class hardware:
 
                 if IBL_Code == 0:
                     self.struct['power']['settings']['inject_bl301']['value'] = '1'
+                    subprocess.call("touch /tmp/bl301_injected", shell=True)
                     self.load_values()
                     response = xbmcDialog.ok(oe._(33512), oe._(33517))
                 elif IBL_Code == 1:
@@ -529,6 +527,8 @@ class hardware:
                             with open('/dev/bootloader', 'wb') as fw:
                                 fw.write(fr.read())
                         self.struct['power']['settings']['inject_bl301']['value'] = '0'
+                        subprocess.call("rm -rf /tmp/bl301_injected", shell=True)
+                        self.load_values()
                         response = xbmcDialog.ok(oe._(33512), oe._(33522))
 
     @log.log_function()
