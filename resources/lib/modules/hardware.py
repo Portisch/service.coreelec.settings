@@ -272,13 +272,10 @@ class hardware:
                     self.load_values()
                     response = xbmcDialog.ok(oe._(33512), oe._(33517))
                 elif IBL_Code == 1:
-                    xbmcDialog = xbmcgui.Dialog()
                     response = xbmcDialog.ok(oe._(33513), oe._(33520))
                 elif IBL_Code == (-2 & 0xff):
-                    xbmcDialog = xbmcgui.Dialog()
                     response = xbmcDialog.ok(oe._(33514), oe._(33519))
                 else:
-                    xbmcDialog = xbmcgui.Dialog()
                     response = xbmcDialog.ok(oe._(33514), oe._(33518) % IBL_Code)
 
                 if IBL_Code != 0:
@@ -501,13 +498,10 @@ class hardware:
                     self.load_values()
                     response = xbmcDialog.ok(oe._(33512), oe._(33517))
                 elif IBL_Code == 1:
-                    xbmcDialog = xbmcgui.Dialog()
                     response = xbmcDialog.ok(oe._(33513), oe._(33520))
                 elif IBL_Code == (-2 & 0xff):
-                    xbmcDialog = xbmcgui.Dialog()
                     response = xbmcDialog.ok(oe._(33514), oe._(33519))
                 else:
-                    xbmcDialog = xbmcgui.Dialog()
                     response = xbmcDialog.ok(oe._(33514), oe._(33518) % IBL_Code)
 
                 if IBL_Code != 0:
