@@ -478,7 +478,24 @@ class system(modules.Module):
             # Do nothing if the dialog is cancelled - path will be the backup destination
             if not os.path.isfile(restore_file_path):
                 return
+
+            if restore_file_path == self.BACKUP_DESTINATION:
+                self.oe.dbg_log('system::do_restore', 'User cancelled', 0)
+                return
+            if not os.path.isfile(restore_file_path):
+                txt = self.oe.split_dialog_text(self.oe._(32374))
+                xbmcDialog = xbmcgui.Dialog()
+                answer = xbmcDialog.ok('Restore', txt[0], txt[1], txt[2])
+                return
+
             restore_file_name = restore_file_path.split('/')[-1]
+
+            match = re.match('.*(?P<time_stamp>\d{14}).*\.tar', restore_file_path)
+            if match != None:
+                restore_file_name = match.group('time_stamp') + '.tar'
+            else:
+                restore_file_name = self.oe.timestamp() + '.tar'
+
             if os.path.exists(self.RESTORE_DIR):
                 oe.execute('rm -rf %s' % self.RESTORE_DIR)
             os.makedirs(self.RESTORE_DIR)
