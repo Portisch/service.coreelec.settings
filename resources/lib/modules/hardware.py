@@ -298,9 +298,11 @@ class hardware:
     def run_inject_bl301(self, parameter=''):
         IBL = subprocess.Popen(["/usr/sbin/inject_bl301", parameter], close_fds=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         IBL.wait()
-        f = open("/storage/inject_bl301.log",'w')
-        f.writelines(IBL.stdout.readlines())
-        f.close()
+        lines = IBL.stdout.readlines()
+        if len(lines) > 0:
+            f = open("/storage/inject_bl301.log",'w')
+            f.writelines([line.decode('utf-8') for line in lines])
+            f.close()
         return IBL.returncode
 
     @log.log_function()
