@@ -487,10 +487,11 @@ class updates(modules.Module):
                     self.do_autoupdate(None, True)
                 else:
                     if oe.BUILD == 'official':
-                        ceUpdate = xbmcgui.Dialog().yesno('CoreELEC', 'An update is available, would you like to download it now?')
-                        if(ceUpdate):
-                            self.update_in_progress = True
-                            self.do_autoupdate(None, True)
+                        if self.struct['update']['settings']['UpdateNotify']['value'] == '1':
+                            ceUpdate = xbmcgui.Dialog().yesno('CoreELEC', 'An update is available, would you like to download it now?')
+                            if(ceUpdate):
+                                self.update_in_progress = True
+                                self.do_autoupdate(None, True)
 
     @log.log_function()
     def do_autoupdate(self, listItem=None, silent=False):
