@@ -231,8 +231,17 @@ class hardware:
                             'action': 'set_value_xml',
                             'type': 'multivalue',
                             },
-                        'emmc': {
+                        'remote_type': {
                             'order': 5,
+                            'name': 32429,
+                            'InfoText': 903,
+                            'value': 'NEC',
+                            'xml_node': 'remote_type',
+                            'action': 'set_value_xml',
+                            'type': 'multivalue',
+                            },
+                        'emmc': {
+                            'order': 6,
                             'name': 32425,
                             'InfoText': 900,
                             'value': '',
@@ -242,7 +251,7 @@ class hardware:
                             'dangerous': True,
                             },
                         'slowsdio': {
-                            'order': 6,
+                            'order': 7,
                             'name': 32426,
                             'InfoText': 901,
                             'value': '',
@@ -489,6 +498,13 @@ class hardware:
                 value = self.oe.read_setting('hardware', 'fan_level')
                 if not value is None:
                     self.struct['fan']['settings']['fan_level']['value'] = value
+
+            if not os.path.exists('/run/use-meson-remote'):
+                self.struct['dtb_settings']['settings']['remote_type']['hidden'] = 'true'
+            else:
+                if 'hidden' in self.struct['dtb_settings']['settings']['remote_type']:
+                    del self.struct['dtb_settings']['settings']['remote_type']['hidden']
+                self.fill_values_by_xml(self.struct['dtb_settings']['settings']['remote_type'])
 
             self.fill_values_by_xml(self.struct['dtb_settings']['settings']['sys_led'])
             self.fill_values_by_xml(self.struct['dtb_settings']['settings']['red_led'])
