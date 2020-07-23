@@ -240,8 +240,17 @@ class hardware:
                             'action': 'set_value_xml',
                             'type': 'multivalue',
                             },
-                        'emmc': {
+                        'dvb': {
                             'order': 6,
+                            'name': 32434,
+                            'InfoText': 904,
+                            'value': '',
+                            'xml_node': 'dvb',
+                            'action': 'set_value_xml',
+                            'type': 'multivalue',
+                            },
+                        'emmc': {
+                            'order': 7,
                             'name': 32425,
                             'InfoText': 900,
                             'value': '',
@@ -251,7 +260,7 @@ class hardware:
                             'dangerous': True,
                             },
                         'slowsdio': {
-                            'order': 7,
+                            'order': 8,
                             'name': 32426,
                             'InfoText': 901,
                             'value': '',
@@ -510,6 +519,7 @@ class hardware:
             self.fill_values_by_xml(self.struct['dtb_settings']['settings']['red_led'])
             self.fill_values_by_xml(self.struct['dtb_settings']['settings']['spicc0'])
             self.fill_values_by_xml(self.struct['dtb_settings']['settings']['spicc1'])
+            self.fill_values_by_xml(self.struct['dtb_settings']['settings']['dvb'])
             self.fill_values_by_xml(self.struct['dtb_settings']['settings']['emmc'])
             self.fill_values_by_xml(self.struct['dtb_settings']['settings']['slowsdio'])
 
