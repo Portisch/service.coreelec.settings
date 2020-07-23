@@ -375,6 +375,10 @@ msgctxt "#903"
 msgid "Choose IR protocol type for meson-remote"
 msgstr ""
 
+msgctxt "#904"
+msgid "Configure DVB GPIO support"
+msgstr ""
+
 msgctxt "#32001"
 msgid "Services"
 msgstr ""
@@ -1276,6 +1280,10 @@ msgstr ""
 
 msgctxt "#32531"
 msgid "CEC Wake-Up"
+msgstr ""
+
+msgctxt "#32532"
+msgid "DVB GPIO Support"
 msgstr ""
 
 msgctxt "#33510"
