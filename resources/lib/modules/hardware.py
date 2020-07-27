@@ -79,6 +79,41 @@ class hardware:
         },
     ]
 
+    disk_idle_times = [
+        {
+            "name": "Disabled",
+            "value": "0"
+        },
+        {
+            "name": "5 Minutes",
+            "value": "300"
+        },
+        {
+            "name": "10 Minutes",
+            "value": "600"
+        },
+        {
+            "name": "20 Minutes",
+            "value": "1200"
+        },
+        {
+            "name": "30 Minutes",
+            "value": "1800"
+        },
+        {
+            "name": "1 Hour",
+            "value": "3600"
+        },
+        {
+            "name": "2 Hours",
+            "value": "7200"
+        },
+        {
+            "name": "5 Hours",
+            "value": "18000"
+        },
+    ]
+
     @log.log_function()
     def __init__(self, oeMain):
         self.oe = oeMain
@@ -243,6 +278,38 @@ class hardware:
                         },
                     },
                 },
+            'hdd': {
+                'order': 6,
+                'name': 32519,
+                'not_supported': [],
+                'settings': {
+                    'disk_park': {
+                        'order': 1,
+                        'name': 32520,
+                        'InfoText': 797,
+                        'value': '0',
+                        'action': 'set_disk_park',
+                        'type': 'bool',
+                        },
+                    'disk_park_time': {
+                        'order': 2,
+                        'name': 32521,
+                        'InfoText': 798,
+                        'value': '10',
+                        'action': 'set_disk_park',
+                        'type': 'text',
+                        },
+                    'disk_idle': {
+                        'order': 3,
+                        'name': 32522,
+                        'InfoText': 799,
+                        'value': '',
+                        'action': 'set_disk_idle',
+                        'type': 'multivalue',
+                        'values': ['Disabled'],
+                        },
+                    },
+                },
             }
 
     @log.log_function()
@@ -251,6 +318,8 @@ class hardware:
         if not 'hidden' in self.struct['fan']:
             self.initialize_fan()
         self.set_cpu_governor()
+        self.set_disk_park()
+        self.set_disk_idle()
 
     @log.log_function()
     def stop_service(self):
@@ -328,7 +397,7 @@ class hardware:
         else:
             if 'hidden' in self.struct['power']['settings']['heartbeat']:
                 del self.struct['power']['settings']['heartbeat']['hidden']
-            heartbeat = self.oe.get_config_ini('heartbeat', '1')
+            heartbeat = oe.get_config_ini('heartbeat', '1')
             if heartbeat == '' or "1" in heartbeat:
                 self.struct['power']['settings']['heartbeat']['value'] = '1'
             if "0" in heartbeat:
@@ -433,6 +502,29 @@ class hardware:
                 value = oe.load_file(sys_device + 'scaling_governor')
 
             self.struct['performance']['settings']['cpu_governor']['value'] = value
+
+        value = oe.read_setting('hardware', 'disk_park')
+        if not value is None:
+            self.struct['hdd']['settings']['disk_park']['value'] = value
+
+        value = oe.read_setting('hardware', 'disk_park_time')
+        if not value is None:
+            self.struct['hdd']['settings']['disk_park_time']['value'] = value
+        else:
+            self.struct['hdd']['settings']['disk_park_time']['value'] = '10'
+
+        value = oe.read_setting('hardware', 'disk_idle')
+        if value is None or value == '':
+            value = 'Disabled'
+
+        disk_idle_times_names = []
+        self.struct['hdd']['settings']['disk_idle']['value'] = 'Disabled'
+        for disk_idle_time in self.disk_idle_times:
+          disk_idle_times_names.append(disk_idle_time["name"])
+          if disk_idle_time["name"] in value:
+            self.struct['hdd']['settings']['disk_idle']['value'] = disk_idle_time["name"]
+
+        self.struct['hdd']['settings']['disk_idle']['values'] = disk_idle_times_names
 
     @log.log_function()
     def initialize_fan(self, listItem=None):
@@ -560,9 +652,9 @@ class hardware:
             self.set_value(listItem)
 
             if self.struct['power']['settings']['heartbeat']['value'] == '1':
-                self.oe.set_config_ini("heartbeat", "1")
+                oe.set_config_ini("heartbeat", "1")
             else:
-                self.oe.set_config_ini("heartbeat", "0")
+                oe.set_config_ini("heartbeat", "0")
 
     @log.log_function()
     def set_wol(self, listItem=None):
@@ -617,6 +709,28 @@ class hardware:
                     cpu_governor_ctl = open(sys_device, 'w')
                     cpu_governor_ctl.write(value)
                     cpu_governor_ctl.close()
+
+    @log.log_function()
+    def set_disk_park(self, listItem=None):
+        if not listItem == None:
+            self.set_value(listItem)
+
+        if self.struct['hdd']['settings']['disk_park']['value'] == '1':
+            value = self.struct['hdd']['settings']['disk_park_time']['value']
+            subprocess.call(("echo -e 'PARK_HDD=\"yes\"\nPARK_WAIT=\"%s\"' > /run/disk-park.dat") % value, shell=True)
+        else:
+            subprocess.call("rm -rf /run/disk-park.dat", shell=True)
+
+    @log.log_function()
+    def set_disk_idle(self, listItem=None):
+        if not listItem == None:
+            self.set_value(listItem)
+
+        subprocess.call("killall hd-idle", shell=True)
+        if not self.struct['hdd']['settings']['disk_idle']['value'] == 'Disabled':
+            for disk_idle_time in self.disk_idle_times:
+                if self.struct['hdd']['settings']['disk_idle']['value'] == disk_idle_time["name"]:
+                    subprocess.call(("hd-idle -i %s") % disk_idle_time["value"], shell=True)
 
     @log.log_function()
     def load_menu(self, focusItem):

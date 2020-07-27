@@ -348,6 +348,18 @@ msgctxt "#796"
 msgid "Enable/Disable CEC Wake-Up by the device become active route"
 msgstr ""
 
+msgctxt "#797"
+msgid "Enable/Disable HDD parking on power off/suspend"
+msgstr ""
+
+msgctxt "#798"
+msgid "Time in seconds to wait for the HDD to spin down when parking"
+msgstr ""
+
+msgctxt "#799"
+msgid "Time in minutes/hours until the HDD should enter suspend mode"
+msgstr ""
+
 msgctxt "#32001"
 msgid "Services"
 msgstr ""
@@ -1198,6 +1210,22 @@ msgstr ""
 
 msgctxt "#32518"
 msgid "Heartbeat LED"
+msgstr ""
+
+msgctxt "#32519"
+msgid "HDD"
+msgstr ""
+
+msgctxt "#32520"
+msgid "Parking"
+msgstr ""
+
+msgctxt "#32521"
+msgid "Parking Time"
+msgstr ""
+
+msgctxt "#32522"
+msgid "Idle Time"
 msgstr ""
 
 msgctxt "#33510"
