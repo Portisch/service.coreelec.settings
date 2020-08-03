@@ -12,6 +12,7 @@ import oeWindows
 import threading
 import subprocess
 import shutil
+import platform
 
 # CEC Wake Up flags from u-boot(bl301)
 CEC_FUNC_MASK = 0
@@ -362,6 +363,15 @@ class hardware:
         return ret
 
     @log.log_function()
+    def check_SoC_id(self, id=''):
+        ret = False
+        cpu_serial = [line for line in open("/proc/cpuinfo", 'r') if 'Serial' in line]
+        cpu_id = [x.strip() for x in cpu_serial[0].split(':')][1]
+        if int(cpu_id[:2], 16) >= id:
+            ret = True
+        return ret
+
+    @log.log_function()
     def run_inject_bl301(self, parameter=''):
         IBL = subprocess.Popen(["/usr/sbin/inject_bl301", parameter], close_fds=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         IBL.wait()
@@ -375,7 +385,9 @@ class hardware:
     @log.log_function()
     def inject_check_compatibility(self):
         ret = False
-        if os.path.exists('/usr/sbin/inject_bl301'):
+        platform_version = platform.release().split('.')
+        if int(platform_version[0]) >= 4 and int(platform_version[1]) >= 9 and \
+            os.path.exists('/usr/sbin/inject_bl301'):
             if self.run_inject_bl301('-c') == 0:
                 ret = True
         return ret
@@ -475,7 +487,7 @@ class hardware:
             if "1" in wol:
                 oe.set_config_ini("wol", "0")
 
-        if not power_setting_visible:
+        if not power_setting_visible or not self.check_SoC_id(0x28):
             self.struct['power']['settings']['usbpower']['hidden'] = 'true'
         else:
             if 'hidden' in self.struct['power']['settings']['usbpower']:
