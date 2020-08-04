@@ -394,6 +394,8 @@ class hardware:
 
     @log.log_function()
     def load_values(self):
+        hide_power_section = True
+
         if not os.path.exists('/sys/class/fan'):
             self.struct['fan']['hidden'] = 'true'
         else:
@@ -407,6 +409,7 @@ class hardware:
         if not os.path.exists('/sys/firmware/devicetree/base/leds/blueled'):
             self.struct['power']['settings']['heartbeat']['hidden'] = 'true'
         else:
+            hide_power_section = False
             if 'hidden' in self.struct['power']['settings']['heartbeat']:
                 del self.struct['power']['settings']['heartbeat']['hidden']
             heartbeat = oe.get_config_ini('heartbeat', '1')
@@ -456,6 +459,7 @@ class hardware:
         if not power_setting_visible:
             self.struct['power']['settings']['remote_power']['hidden'] = 'true'
         else:
+            hide_power_section = False
             if 'hidden' in self.struct['power']['settings']['remote_power']:
                 del self.struct['power']['settings']['remote_power']['hidden']
 
@@ -478,6 +482,7 @@ class hardware:
 
         wol = oe.get_config_ini('wol', '0')
         if any("stmmac" in s for s in os.listdir('/sys/bus/mdio_bus/drivers/RTL8211F Gigabit Ethernet')):
+            hide_power_section = False
             if wol == '' or "0" in wol:
                 self.struct['power']['settings']['wol']['value'] = '0'
             if "1" in wol:
@@ -490,6 +495,7 @@ class hardware:
         if not power_setting_visible or not self.check_SoC_id(0x28):
             self.struct['power']['settings']['usbpower']['hidden'] = 'true'
         else:
+            hide_power_section = False
             if 'hidden' in self.struct['power']['settings']['usbpower']:
                 del self.struct['power']['settings']['usbpower']['hidden']
 
@@ -542,6 +548,9 @@ class hardware:
             self.struct['hdd']['settings']['disk_idle']['value'] = disk_idle_time["name"]
 
         self.struct['hdd']['settings']['disk_idle']['values'] = disk_idle_times_names
+
+        if hide_power_section:
+            self.struct['power']['hidden'] = 'true'
 
     @log.log_function()
     def initialize_fan(self, listItem=None):
