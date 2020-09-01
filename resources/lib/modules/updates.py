@@ -140,6 +140,18 @@ class updates(modules.Module):
                     'InfoText': 770,
                     'order': 9,
                 },
+                'Update2NextStable': {
+                    'name': 32030,
+                    'value': '0',
+                    'action': 'set_value',
+                    'type': 'bool',
+                    'parent': {
+                        'entry': 'AutoUpdate',
+                        'value': ['auto'],
+                        },
+                    'InfoText': 716,
+                    'order': 10,
+                    },
             },
         },
         'rpieeprom': {
@@ -272,6 +284,9 @@ class updates(modules.Module):
             self.struct['update']['settings']['UpdateNotify']['value'] = value
         if os.path.isfile(f'{self.LOCAL_UPDATE_DIR}/SYSTEM'):
             self.update_in_progress = True
+        value = oe.read_setting('updates', 'Update2NextStable')
+        if not value is None:
+            self.struct['update']['settings']['Update2NextStable']['value'] = value
 
         # Manual Update
 
@@ -458,22 +473,36 @@ class updates(modules.Module):
             return build
 
     @log.log_function()
+    def fetch_update_json(self):
+        versions = []
+        if self.struct['update']['settings']['Update2NextStable']['value'] == '1':
+            if oe.LAST_STABLE:
+                versions.append(oe.LAST_STABLE)
+
+        if oe.BUILDER_VERSION:
+            versions.append(oe.BUILDER_VERSION)
+        else:
+            versions.append(oe.VERSION)
+
+        for ver in versions:
+            url = f'{self.UPDATE_REQUEST_URL}?i={oe.url_quote(oe.SYSTEMID)}&d={oe.url_quote(oe.DISTRIBUTION)}&pa={oe.url_quote(oe.ARCHITECTURE)}&v={ver}&f={oe.url_quote(self.hardware_flags)}'
+            if oe.BUILDER_NAME:
+               url += f'&b={oe.url_quote(oe.BUILDER_NAME)}'
+            if self.struct['update']['settings']['SubmitStats']['value'] == '0':
+               url += f'&nostats'
+
+            oe.dbg_log('updates::fetch_update_json', f'URL: {url}', oe.LOGDEBUG)
+            update_json = oe.load_url(url)
+            if update_json != '':
+                break
+        return update_json
+
+    @log.log_function()
     def check_updates_v2(self, force=False):
         if hasattr(self, 'update_in_progress'):
             oe.dbg_log('updates::check_updates_v2', 'Update in progress (exit)', oe.LOGDEBUG)
             return
-        if oe.BUILDER_VERSION:
-            version = oe.BUILDER_VERSION
-        else:
-            version = oe.VERSION
-        url = f'{self.UPDATE_REQUEST_URL}?i={oe.url_quote(oe.SYSTEMID)}&d={oe.url_quote(oe.DISTRIBUTION)}&pa={oe.url_quote(oe.ARCHITECTURE)}&v={oe.url_quote(version)}&f={oe.url_quote(self.hardware_flags)}'
-        if oe.BUILDER_NAME:
-           url += f'&b={oe.url_quote(oe.BUILDER_NAME)}'
-        if self.struct['update']['settings']['SubmitStats']['value'] == '0':
-           url += f'&nostats'
-
-        oe.dbg_log('updates::check_updates_v2', f'URL: {url}', oe.LOGDEBUG)
-        update_json = oe.load_url(url)
+        update_json = self.fetch_update_json()
         oe.dbg_log('updates::check_updates_v2', f'RESULT: {repr(update_json)}', oe.LOGDEBUG)
         if update_json != '':
             update_json = json.loads(update_json)
