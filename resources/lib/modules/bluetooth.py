@@ -689,6 +689,11 @@ class discoveryThread(threading.Thread):
 
     @log.log_function()
     def run(self):
+
+        self.dbusSystemBus.request_name("com.service.coreelec.settings.xdbus.stoploop")
+        busName = dbus.service.BusName("com.service.coreelec.settings.xdbus.stoploop", bus=self.dbusSystemBus)
+        dbus.service.Object(busName, "/com/service/coreelec/settings/xdbus/stoploop")
+
         while not self.stopped and not oe.xbmcm.abortRequested():
             current_time = time.time()
             if current_time > self.last_run + 5:
