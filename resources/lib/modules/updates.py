@@ -485,7 +485,7 @@ class updates(modules.Module):
             versions.append(oe.VERSION)
 
         for ver in versions:
-            url = f'{self.UPDATE_REQUEST_URL}?i={oe.url_quote(oe.SYSTEMID)}&d={oe.url_quote(oe.DISTRIBUTION)}&pa={oe.url_quote(oe.ARCHITECTURE)}&v={ver}&f={oe.url_quote(self.hardware_flags)}'
+            url = f'{self.UPDATE_REQUEST_URL}?i={oe.url_quote(oe.SYSTEMID)}&d={oe.url_quote(oe.DISTRIBUTION)}&pa={oe.url_quote(oe.ARCHITECTURE)}&v={ver}&f={oe.url_quote(self.hardware_flags)}&os={oe.url_quote(oe.VERSION_ID)}'
             if oe.BUILDER_NAME:
                url += f'&b={oe.url_quote(oe.BUILDER_NAME)}'
             if self.struct['update']['settings']['SubmitStats']['value'] == '0':
