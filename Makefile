@@ -4,9 +4,6 @@
 # Copyright (C) 2020-present Team LibreELEC (https://libreelec.tv)
 
 ADDON_NAME := service.coreelec.settings
-ADDON_VERSION := 0.0.0
-DISTRONAME := CoreELEC
-ROOT_PASSWORD := coreelec
 
 SHELL := /bin/bash
 BUILDDIR := build
